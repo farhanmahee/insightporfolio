@@ -1,0 +1,45 @@
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Tenant {
+  id        String      @id @default(cuid())
+  name      String
+  insights  AIInsight[]
+}
+
+model AIInsight {
+  id              String   @id @default(cuid())
+  tenantId        String
+  type            String // "inventory", "sales", "accounting"
+  title           String
+  description     String
+  recommendation  String
+  confidenceScore Float
+  actionItems     Json
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  resolved        Boolean  @default(false)
+  
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model AIRequest {
+  id           String   @id @default(cuid())
+  tenantId     String
+  userId       String
+  prompt       String
+  model        String // "gemini-3-pro-preview"
+  tokensUsed   Int
+  costUSD      Float
+  responseTime Int // ms
+  status       String // "success", "error", "rate_limited"
+  createdAt    DateTime @default(now())
+}
